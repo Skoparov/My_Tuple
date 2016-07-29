@@ -2,6 +2,7 @@
 #define FOR_EACH_OF_TYPE_H
 
 #include "tuple_get.h"
+#include "first_of_type.h"
 
 namespace details
 {
@@ -22,12 +23,11 @@ namespace basic
 {
 
 template< typename Target, typename Functor, typename T >
-void for_each_of_type_t( T& t, Functor& f )
+void for_each_of_type( T& t, Functor& f )
 {
     constexpr size_t next_index = first_of_type< Target >( t );
     details::for_each_of_type< Target, Functor, next_index >( t, f );
 }
-
 
 }
 
