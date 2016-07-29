@@ -38,13 +38,13 @@ constexpr size_t tuple_size( const T< Args... >&& t )
 // Creates a tuple from arbitary number of arguments
 
 template< typename... Args >
-my_tuple< Args... > make_my_tuple( const Args&... args )
+constexpr my_tuple< Args... > make_my_tuple( const Args&... args )
 {
     return my_tuple< Args... >( args... );
 }
 
 template< typename... Args >
-my_tuple< Args... > make_my_tuple( Args&&... args )
+constexpr my_tuple< Args... > make_my_tuple( Args&&... args )
 {
     return my_tuple< Args... >( std::forward< Args >( args )... );
 }

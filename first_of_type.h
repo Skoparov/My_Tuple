@@ -45,7 +45,7 @@ template< typename Target,
           typename std::enable_if_t< args_size< Tail... >() == 0 >* = nullptr >
 constexpr size_t first_of_type()
 {
-    return std::is_same< T, Target >::value && startIndex >= index?
+    return std::is_same< T, Target >::value && index >= startIndex?
                 index : index + 1;
 }
 
@@ -56,7 +56,7 @@ template< typename Target,
           typename std::enable_if_t< args_size< Tail... >() != 0 >* = nullptr >
 constexpr size_t first_of_type()
 {
-    return std::is_same< T, Target >::value &&  startIndex >= index ?
+    return std::is_same< T, Target >::value &&  index >= startIndex?
                 index : details::first_of_type< Target, startIndex, index + 1, Tail... >();
 }
 

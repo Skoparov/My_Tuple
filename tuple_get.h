@@ -33,7 +33,7 @@ get( T< Curr, Tail... >& t )
 }
 
 template< size_t k, template< typename... > class T, typename Curr, typename... Tail >
-std::enable_if_t< k == 0, Curr& >
+constexpr std::enable_if_t< k == 0, Curr& >
 get( T< Curr, Tail... >& t )
 {
     return t.data;
