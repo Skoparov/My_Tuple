@@ -2,6 +2,7 @@
 #define MY_TUPLE_H
 
 #include "tuple_concat.h"
+#include "tuple_compare.h"
 
 namespace basic
 {
@@ -20,20 +21,6 @@ struct my_tuple< T, Tail... > : my_tuple< Tail... >
 
     T data;
 };
-
-// Acquires tuple size
-
-template< template< typename... > class T, typename...Args >
-constexpr size_t tuple_size( const T< Args... >& t )
-{
-    return sizeof...(Args);
-}
-
-template< template< typename... > class T, typename...Args >
-constexpr size_t tuple_size( const T< Args... >&& t )
-{
-    return sizeof...(Args);
-}
 
 // Creates a tuple from arbitary number of arguments
 
