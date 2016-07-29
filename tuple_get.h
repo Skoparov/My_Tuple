@@ -42,9 +42,8 @@ get( T< Curr, Tail... >& t )
 template< size_t k, template< typename... > class T, typename Curr, typename... Tail >
 constexpr std::enable_if_t< k != 0, elem_type_t< k, Curr, Tail... >const& >
 get( const T< Curr, Tail... >& t )
-{
-    T< Tail... >& base = t;
-    return get< k-1, T, Tail... >( base );
+{     
+    return get< k-1, T, Tail... >( ( const T< Tail... >& )t );
 }
 
 template< size_t k, template< typename... > class T, typename Curr, typename... Tail >
@@ -57,9 +56,8 @@ get( const T< Curr, Tail... >& t )
 template< size_t k, template< typename... > class T, typename Curr, typename... Tail >
 std::enable_if_t< k != 0, elem_type_t< k, Curr, Tail... >&& >
 get( T< Curr, Tail... >&& t )
-{
-    T< Tail... >& base = t;
-    return get< k-1, T, Tail... >( base );
+{    
+    return get< k-1, T, Tail... >( std::forward< T< Tail... > >( t ) );
 }
 
 template< size_t k, template< typename... > class T, typename Curr, typename... Tail >
@@ -73,8 +71,7 @@ template< size_t k, template< typename... > class T, typename Curr, typename... 
 constexpr typename std::enable_if< k != 0, elem_type_t< k, Curr, Tail... > const&& >::type
 get( const T< Curr, Tail... >&& t )
 {
-    T< Tail... >& base = t;
-    return get< k-1, T, Tail... >( base );
+    return get< k-1, T, Tail... >( std::forward< const T< Tail... > >( t ) );
 }
 
 template< size_t k, template< typename... > class T, typename Curr, typename... Tail >

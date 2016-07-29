@@ -28,15 +28,34 @@ using concat_type_t = typename details::concat_type< Args... >::type;
 // Creates a new tuple by concatenating several tuples
 
 template< template< typename... > class T, typename... Args >
-T< Args... > concat_tuples( T< Args... >& t )
+T< Args... > concat_tuples( const T< Args... >& t )
 {
     return t;
 }
 
 template< template< typename... > class T, typename... Args, typename... Others >
-concat_type_t< T< Args... >, Others... > concat_tuples( T< Args... >& t, Others... others )
+concat_type_t< T< Args... >, Others... > concat_tuples( const T< Args... >& t, Others... others )
 {
     auto prev = concat_tuples( others... );
+    using CurrTuple = concat_type_t< T< Args... >, decltype( prev ) >;
+
+    CurrTuple dest;
+    copy_tuple( t, dest );
+    copy_tuple< 0, sizeof...( Args ) >( prev, dest );
+
+    return dest;
+}
+
+template< template< typename... > class T, typename... Args >
+T< Args... > concat_tuples( const T< Args... >&& t )
+{
+    return t;
+}
+
+template< template< typename... > class T, typename... Args, typename... Others >
+concat_type_t< T< Args... >, Others... > concat_tuples( const T< Args... >&& t, Others... others )
+{
+    auto prev = concat_tuples( std::forward< Others >( others )... );
     using CurrTuple = concat_type_t< T< Args... >, decltype( prev ) >;
 
     CurrTuple dest;
