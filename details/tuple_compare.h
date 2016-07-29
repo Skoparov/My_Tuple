@@ -1,6 +1,7 @@
 #ifndef TUPLE_COMPARE_H
 #define TUPLE_COMPARE_H
 
+#include "tuple_detector.h"
 #include "compare_with_types.h"
 
 namespace details
@@ -13,6 +14,14 @@ constexpr bool compare_tuples( const T1& t1, const T2& t2 );
 template< size_t index, size_t tuple_size, typename T1, typename T2,
           std::enable_if_t< index <= tuple_size - 1 >* = nullptr >
 constexpr bool compare_tuples( const T1& t1, const T2& t2 );
+
+template< size_t index, size_t tuple_size, typename T1, typename T2,
+          std::enable_if_t< index >= tuple_size >* = nullptr >
+constexpr bool compare_tuples( const T1&& t1, const T2&& t2 );
+
+template< size_t index, size_t tuple_size, typename T1, typename T2,
+          std::enable_if_t< index <= tuple_size - 1 >* = nullptr >
+constexpr bool compare_tuples( const T1&& t1, const T2&& t2 );
 
 }
 namespace basic
@@ -34,7 +43,7 @@ constexpr size_t tuple_size( const T< Args... >&& t )
 
 // Comparison operators
 
-template< class T, class U >
+template< class T, class U, typename std::enable_if_t< is_tuple< T >::value && is_tuple< U >::value >* = nullptr >
 constexpr inline bool operator==( const T& t, const U& u )
 {
     return tuple_size( t ) != tuple_size( u )?
@@ -42,7 +51,7 @@ constexpr inline bool operator==( const T& t, const U& u )
                 details::compare_tuples< 0, tuple_size( t ) >( t, u );
 }
 
-template< class T, class U >
+template< class T, class U, typename std::enable_if_t< is_tuple< T >::value && is_tuple< U >::value >* = nullptr >
 constexpr inline bool operator!=( const T& t, const U& u )
 {
     return tuple_size( t ) == tuple_size( u )?
@@ -50,7 +59,7 @@ constexpr inline bool operator!=( const T& t, const U& u )
                 true;
 }
 
-template< class T, class U >
+template< class T, class U, typename std::enable_if_t< is_tuple< T >::value && is_tuple< U >::value >* = nullptr >
 constexpr inline bool operator==( const T&& t, const U&& u )
 {
     return tuple_size( t ) != tuple_size( u )?
@@ -59,7 +68,7 @@ constexpr inline bool operator==( const T&& t, const U&& u )
                     std::forward< const T >( t ), std::forward< const U >( u ) );
 }
 
-template< class T, class U >
+template< class T, class U, typename std::enable_if_t< is_tuple< T >::value && is_tuple< U >::value >* = nullptr >
 constexpr inline bool operator!=( const T&& t, const U&& u )
 {
     return tuple_size( t ) == tuple_size( u )?
@@ -91,6 +100,27 @@ constexpr bool compare_tuples( const T1& t1, const T2& t2 )
     return compare_with_types< value_type1, value_type2 > ( get< index >( t1 ), get< index >( t2 ) ) == false?
                 false :
                 compare_tuples< index + 1, tuple_size >( t1, t2 );
+}
+
+template< size_t index, size_t tuple_size, typename T1, typename T2,
+          std::enable_if_t< index >= tuple_size >* = nullptr >
+constexpr bool compare_tuples( const T1&& t1, const T2&& t2 )
+{
+    return true;
+}
+
+template< size_t index, size_t tuple_size, typename T1, typename T2,
+          std::enable_if_t< index <= tuple_size - 1 >* = nullptr >
+constexpr bool compare_tuples( const T1&& t1, const T2&& t2 )
+{
+    using namespace basic;
+    using value_type1 = decltype( get< index >( t1 ) );
+    using value_type2 = decltype( get< index >( t2 ) );
+
+    return compare_with_types< value_type1, value_type2 > ( get< index >( t1 ), get< index >( t2 ) ) == false?
+                false :
+                compare_tuples< index + 1, tuple_size >( std::forward< const T1 >( t1 ),
+                                                         std::forward< const T2 >( t2 ) );
 }
 
 }

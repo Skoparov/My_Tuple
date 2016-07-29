@@ -4,14 +4,17 @@
 #include "details/tuple_concat.h"
 #include "details/tuple_compare.h"
 #include "details/for_each_of_type.h"
+#include "details/tuple_find.h"
 
 namespace basic
 {
 
 // Basic tuple implementation
-
 template< typename... Args >
-struct my_tuple{};
+struct my_tuple
+{
+    using tuple_tag = void;
+};
 
 template< typename T, typename... Tail >
 struct my_tuple< T, Tail... > : my_tuple< Tail... >

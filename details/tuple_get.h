@@ -1,6 +1,7 @@
 #ifndef TUPLE_GET_H
 #define TUPLE_GET_H
 
+#include <functional>
 #include <type_traits>
 
 namespace details
@@ -27,9 +28,8 @@ using elem_type_t = typename details::elem_type< k, Args... >::type;
 template< size_t k, template< typename... > class T, typename Curr, typename... Tail >
 std::enable_if_t< k != 0, elem_type_t< k, Curr, Tail... >& >
 get( T< Curr, Tail... >& t )
-{
-    T< Tail... >& base = t;
-    return get< k-1, T, Tail... >( base );
+{    
+    return get< k-1, T, Tail... >( ( T< Tail... >& )t );
 }
 
 template< size_t k, template< typename... > class T, typename Curr, typename... Tail >

@@ -125,6 +125,15 @@ namespace test
         static_assert( !type_present_t< short >( v ), " type_present fail" );
     }
 
+    void test_find()
+    {
+        constexpr my_tuple< int, float, int, double, int > test1 = make_my_tuple( 0, 1.1f, 2, 2.2, 2 );
+        static_assert( tuple_find< int >( 2, test1 ) == 2, "find fail" );
+        static_assert( tuple_find< int, 3 >( 2, test1 ) == 4, "find fail" );
+        static_assert( tuple_find< int >( 5, test1 ) == 5, "find fail" );
+        static_assert( tuple_find< short >( 2, test1 ) == 5, "find fail" );
+    }
+
     void run_all_tests()
     {
         try
@@ -138,6 +147,7 @@ namespace test
             test_compare();
             test_copy();
             test_concat();
+            test_find();
         }
         catch( const std::exception& e )
         {
