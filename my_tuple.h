@@ -6,11 +6,28 @@
 namespace details
 {
 
+template< typename... Tail >
+struct concat_type;
+
+template< template< typename... > class T, typename... CurrArgs1, typename... CurrArgs2, typename... TailArgs >
+struct concat_type< T< CurrArgs1... >, T< CurrArgs2... >, TailArgs... >;
+
+template< template< typename... > class T, typename... CurrArgs1, typename... CurrArgs2 >
+struct concat_type< T< CurrArgs1... >, T< CurrArgs2... > >;
+
 template< size_t k, typename T, typename... Tail >
 struct elem_type;
 
 template< typename T, typename... Tail >
 struct elem_type< 0, T, Tail... >;
+
+template< size_t index, size_t destIndex, size_t count, template< typename... > class T, typename... Args1, typename... Args2,
+          std::enable_if_t< count != 0 >* = nullptr >
+void copy_tuple( T< Args1... >& source, T< Args2... >& target );
+
+template< size_t index, size_t destIndex, size_t count, template< typename... > class T, typename... Args1, typename... Args2,
+          std::enable_if_t< count == 0 >* = nullptr >
+void copy_tuple( T< Args1... >&, T< Args2... >& );
 
 }
 
@@ -127,7 +144,95 @@ get( const my_tuple< T, Tail... >&& t )
     return std::move( t.data );
 }
 
+// Acquires the type of several tuples' concatenation result
+
+template< typename... Args >
+using concat_type_t = typename details::concat_type< Args... >::type;
+
+// Copies the elements of one tuple to another
+
+template< size_t begin = 0, size_t destBegin = 0, size_t count = 0,
+          template< typename... > class T, typename... Args1, typename... Args2 >
+void copy_tuple( T< Args1... >& source, T< Args2... >& target )
+{
+    static_assert( begin >= 0, "Begin position must be >= 0" );
+    static_assert( destBegin >= 0, "Dest begin position must be >= 0" );
+    static_assert( count >= 0, "Number of objects to be copied must be >= 0" );
+
+    constexpr size_t actualCount = count > 0? count : sizeof...( Args1 );
+    static_assert( actualCount <= sizeof...( Args2 ), "Number of objects to be copied must be <= dest dize" );
+
+    return details::copy_tuple< begin, destBegin, actualCount >( source, target );
 }
 
+// Creates a new tuple by concatenating several tuples
+
+template< template< typename... > class T, typename... Args >
+T< Args... > concat_tuples( T< Args... >& t )
+{
+    return t;
+}
+
+template< template< typename... > class T, typename... Args, typename... Others >
+concat_type_t< T< Args... >, Others... > concat_tuples( T< Args... >& t, Others... others )
+{
+    auto prev = concat_tuples( others... );
+    using CurrTuple = concat_type_t< T< Args... >, decltype( prev ) >;
+
+    CurrTuple dest;
+    copy_tuple( t, dest );
+    copy_tuple< 0, sizeof...( Args ) >( prev, dest );
+
+    return dest;
+}
+
+}
+
+namespace details
+{
+
+template< typename... Tail >
+struct concat_type;
+
+template< template< typename... > class T, typename... CurrArgs1, typename... CurrArgs2, typename... TailArgs >
+struct concat_type< T< CurrArgs1... >, T< CurrArgs2... >, TailArgs... >
+{
+    using type = typename concat_type< T< CurrArgs1..., CurrArgs2... >, TailArgs... >::type;
+};
+
+template< template< typename... > class T, typename... CurrArgs1, typename... CurrArgs2 >
+struct concat_type< T< CurrArgs1... >, T< CurrArgs2... > >
+{
+    using type = class T< CurrArgs1..., CurrArgs2... >;
+};
+
+template< size_t k, typename T, typename... Tail >
+struct elem_type
+{
+    using type = typename elem_type< k-1, Tail... >::type;
+};
+
+template< typename T, typename... Tail >
+struct elem_type< 0, T, Tail... >
+{
+    using type = T;
+};
+
+template< size_t index, size_t destIndex, size_t count, template< typename... > class T, typename... Args1, typename... Args2,
+          std::enable_if_t< count != 0 >* = nullptr >
+void copy_tuple( T< Args1... >& source, T< Args2... >& target )
+{
+    basic::get< destIndex >(target) = basic::get< index >( source );
+    return details::copy_tuple< index + 1, destIndex + 1, count - 1 >( source, target );
+}
+
+template< size_t index, size_t destIndex, size_t count, template< typename... > class T, typename... Args1, typename... Args2,
+          std::enable_if_t< count == 0 >* = nullptr >
+void copy_tuple( T< Args1... >&, T< Args2... >& )
+{
+
+}
+
+}
 
 #endif
